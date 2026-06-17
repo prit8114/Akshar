@@ -1,0 +1,9 @@
+sample_id,script,age,labeled_by,confidence,tracing_normalized_duration,tracing_reattempt_count,tracing_stroke_smoothness,tracing_pen_consistency,tracing_direction_changes,tracing_bbox_coverage,reading_mean_latency_normalized,reading_latency_std_dev,reading_accuracy,reading_latency_variability,reading_word_count,reading_correct_ratio,is_dyslexia
+gu_20240101_001,gu,5,specialist_001,0.95,0.52,0.40,0.72,0.72,0.35,0.65,0.60,0.15,0.87,0.25,0.50,0.87,0
+gu_20240102_001,gu,6,specialist_001,0.92,0.89,1.00,0.45,0.45,0.45,0.50,1.05,0.35,0.62,0.55,0.60,0.62,1
+hi_20240103_001,hi,5,teacher_001,0.98,0.48,0.20,0.85,0.85,0.25,0.70,0.47,0.08,0.95,0.15,0.50,0.95,0
+gu_20240104_002,gu,5,specialist_002,0.88,0.45,0.20,0.78,0.78,0.30,0.68,0.55,0.12,0.90,0.22,0.50,0.90,0
+gu_20240105_003,gu,7,specialist_001,0.91,0.95,0.80,0.38,0.38,0.50,0.45,1.10,0.40,0.58,0.60,0.70,0.58,1
+hi_20240106_002,hi,6,teacher_002,0.94,0.52,0.40,0.75,0.75,0.32,0.62,0.62,0.18,0.88,0.28,0.50,0.88,0
+gu_20240107_004,gu,5,specialist_003,0.85,0.58,0.60,0.65,0.65,0.38,0.58,0.70,0.22,0.75,0.35,0.60,0.75,0
+hi_20240108_003,hi,7,specialist_001,0.89,0.92,0.90,0.42,0.42,0.48,0.48,1.08,0.38,0.60,0.58,0.70,0.60,1

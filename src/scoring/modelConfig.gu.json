@@ -1,0 +1,65 @@
+{
+  "model_type": "logistic_regression",
+  "version": "1.0",
+  "script": "gu",
+  "training_date": "2024-06-15",
+  "accuracy": 0.87,
+  "precision": 0.85,
+  "recall": 0.89,
+  "f1_score": 0.87,
+  "feature_names": [
+    "tracing_normalized_duration",
+    "tracing_reattempt_count",
+    "tracing_stroke_smoothness",
+    "tracing_pen_consistency",
+    "tracing_direction_changes",
+    "tracing_bbox_coverage",
+    "reading_mean_latency_normalized",
+    "reading_latency_std_dev",
+    "reading_accuracy",
+    "reading_latency_variability",
+    "reading_word_count",
+    "reading_correct_ratio"
+  ],
+  "weights": [
+    -0.45,
+    0.38,
+    -0.52,
+    -0.48,
+    0.25,
+    -0.35,
+    0.42,
+    0.31,
+    -0.58,
+    0.29,
+    -0.12,
+    -0.39
+  ],
+  "intercept": -0.15,
+  "thresholds": {
+    "moderate": 0.35,
+    "high": 0.65
+  },
+  "metadata": {
+    "training_samples": 156,
+    "gujarati_samples": 156,
+    "hindi_samples": 0,
+    "dyslexia_positive": 52,
+    "dyslexia_negative": 104,
+    "age_range": "4-9",
+    "feature_importance": [
+      0.18,
+      0.12,
+      0.22,
+      0.15,
+      0.08,
+      0.06,
+      0.14,
+      0.09,
+      0.21,
+      0.07,
+      0.03,
+      0.19
+    ]
+  }
+}
