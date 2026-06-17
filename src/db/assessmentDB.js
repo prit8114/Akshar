@@ -148,3 +148,21 @@ export function createDemoData() {
     storeAssessment(assessment.studentId, assessment);
   });
 }
+
+/**
+ * Update an existing assessment with a specialist label and notes
+ */
+export function updateAssessmentLabel(studentId, assessmentId, label, notes) {
+  const student = assessmentDatabase.students.get(studentId);
+  if (!student) return false;
+  
+  const assessment = student.assessments.find(a => a.id === assessmentId);
+  if (!assessment) return false;
+  
+  assessment.specialistLabel = label;
+  if (notes) {
+    assessment.specialistNotes = notes;
+  }
+  
+  return true;
+}

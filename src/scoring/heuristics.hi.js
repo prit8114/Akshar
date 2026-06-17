@@ -23,7 +23,7 @@ export const hindiScorer = {
    * @returns {object} score breakdown
    */
   evaluateTracing(data) {
-    const { duration = 0, reattempts = 0, confidence = 0 } = data;
+    const { duration = 0, reattempts = 0 } = data;
 
     // Normalize duration
     const speedScore = this.normalizeSpeed(duration);
@@ -32,19 +32,15 @@ export const hindiScorer = {
     const reattemptPenalty =
       reattempts * hindiThresholds.tracing.reattemptPenalty;
 
-    // Confidence score
-    const confidenceScore = Math.min(confidence, 1);
-
     // Combined score
     const tracingScore = Math.max(
       0,
-      speedScore * 0.4 + confidenceScore * 0.6 - reattemptPenalty
+      speedScore - reattemptPenalty
     );
 
     return {
       score: tracingScore,
       speedScore,
-      confidenceScore,
       reattempts,
       duration,
       level: tracingScore > 0.65 ? 'good' : 'needs_improvement',

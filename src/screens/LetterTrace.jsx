@@ -73,6 +73,7 @@ const LetterTrace = React.memo(function LetterTrace({ language, traceIdx, onDone
   const clearedCount = useRef(0)
   const lastPos = useRef(null)
   const [hasStroke, setHasStroke] = useState(false)
+  const startTime = useRef(null)
 
   // Initialize randomized letters on first mount
   const [selectedLetters] = useState(() => {
@@ -85,7 +86,7 @@ const LetterTrace = React.memo(function LetterTrace({ language, traceIdx, onDone
 
   const copy = COPY[language]
   const letter = selectedLetters[traceIdx] || selectedLetters[0] // fallback if traceIdx out of bounds
-  const progress = Math.round((traceIdx / selectedLetters.length) * 100)
+  const progress = Math.round(((traceIdx + 1) / selectedLetters.length) * 100)
 
   // Dynamically calculate font sizes based on string length to ensure they stay centered and don't overflow
   // e.g. Conjuncts can be 3+ JS characters long
@@ -124,6 +125,7 @@ const LetterTrace = React.memo(function LetterTrace({ language, traceIdx, onDone
     lastPos.current = null
     isDrawing.current = false
     pathsRef.current = []
+    startTime.current = null
     setHasStroke(false)
 
     const getXY = (e) => {
@@ -162,6 +164,9 @@ const LetterTrace = React.memo(function LetterTrace({ language, traceIdx, onDone
     const onMouseDown = (e) => {
       if (e.touches) e.preventDefault()
       isDrawing.current = true
+      if (!startTime.current) {
+        startTime.current = Date.now()
+      }
       const pos = getXY(e)
       pathsRef.current.push([pos])
       lastPos.current = pos
@@ -214,14 +219,18 @@ const LetterTrace = React.memo(function LetterTrace({ language, traceIdx, onDone
     pathLength.current = 0
     clearedCount.current += 1
     pathsRef.current = []
+    startTime.current = null
     setHasStroke(false)
   }
 
   const handleDone = () => {
     onDone({
       letter: letter.char,
+      strokes: pathsRef.current.map(path => ({ points: path })),
+      duration: startTime.current ? Date.now() - startTime.current : 0,
+      reattempts: clearedCount.current,
       pathLength: pathLength.current,
-      clearedCount: clearedCount.current,
+      confidence: 1, // Defaulting to 1 for featureExtractor compatibility
     })
   }
 

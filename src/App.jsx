@@ -1,8 +1,14 @@
 import React, { useState, Suspense, useMemo, useCallback, useEffect } from 'react'
 import './index.css'
-import { createDemoData, getStudentAssessments, getAllStudents } from './db/assessmentDB';
+import { createDemoData, getStudentAssessments, getAllStudents, storeAssessment, updateAssessmentLabel } from './db/assessmentDB';
 import { PerformanceAnalytics } from './components/PerformanceAnalytics';
 import { StudentProgressChart } from './components/StudentProgressChart';
+import { ReadingTask } from './components/ReadingTask';
+import { scoringEngine } from './scoring/scoringEngine';
+import { wordsHi } from './data/words.hi';
+import { wordsGu } from './data/words.gu';
+
+const WORDS = { hindi: wordsHi, gujarati: wordsGu };
 
 // Lazy loaded components for code splitting
 const Welcome = React.lazy(() => import('./screens/Welcome'))
@@ -23,6 +29,7 @@ export default function App() {
   const [child, setChild] = useState({ name: '', age: '' })
   const [traceIdx, setTraceIdx] = useState(0)
   const [traceResults, setTraceResults] = useState([])
+  const [readingResults, setReadingResults] = useState(null)
 
   // Memoize steps array to prevent recreation on every render
   const steps = useMemo(() => [
@@ -30,6 +37,7 @@ export default function App() {
     { key: 'child_info', label: 'Profile', note: 'Language and age' },
     { key: 'trace_intro', label: 'Preview', note: 'Show the letters' },
     { key: 'tracing', label: 'Tracing', note: 'Capture motor control' },
+    { key: 'reading', label: 'Reading', note: 'Capture fluency' },
     { key: 'phase3', label: 'Insights', note: 'Review performance' },
   ], [])
 
@@ -43,13 +51,45 @@ export default function App() {
 
   // Memoize callback function
   const handleTraceDone = useCallback((result) => {
-    setTraceResults(prev => [...prev, result])
-    if (traceIdx < 2) {
-      setTraceIdx(i => i + 1)
-    } else {
-      go('phase3')
-    }
+    setTraceResults(prev => {
+      const updated = [...prev, result]
+      if (traceIdx < 2) {
+        setTraceIdx(i => i + 1)
+      } else {
+        go('reading')
+      }
+      return updated
+    })
   }, [traceIdx, go])
+
+  const handleReadingDone = async (results) => {
+    setReadingResults(results)
+    
+    // Wire up the scoring engine using both tracing and reading results
+    // Generate a student ID based on name and session
+    const studentId = `student_${child.name || '001'}_${Date.now()}`
+    
+    // Aggregate trace results for the feature extractor
+    const aggregatedTrace = {
+      strokes: traceResults.flatMap(t => t.strokes || []),
+      duration: traceResults.reduce((sum, t) => sum + (t.duration || 0), 0),
+      reattempts: traceResults.reduce((sum, t) => sum + (t.reattempts || 0), 0),
+      confidence: 1 // Defaulted to 1 as per ML requirements
+    }
+    
+    // Generate real assessment report from actual captured data
+    const report = await scoringEngine.generateReport(
+      language === 'gujarati' ? 'gu' : 'hi', 
+      aggregatedTrace, 
+      results
+    )
+    
+    // Store in DB so Phase 3 reads real data
+    report.studentId = studentId
+    storeAssessment(studentId, report)
+    
+    go('phase3')
+  }
 
   if (screen === 'phase3') {
     return (
@@ -89,6 +129,18 @@ export default function App() {
     )
   }
 
+  if (screen === 'reading') {
+    content = (
+      <ReadingTask
+        words={WORDS[language].slice(0, 5)}
+        onComplete={handleReadingDone}
+        onSkip={() => handleReadingDone([])}
+        taskIndex={0}
+        totalTasks={5}
+      />
+    )
+  }
+
   return (
     <div className="app-shell">
       <div className="app-shell-inner">
@@ -120,10 +172,19 @@ export default function App() {
 
 export function Phase3Demo() {
   const [currentView, setCurrentView] = useState('portal-menu');
+  const [latestStudentId, setLatestStudentId] = useState('student_001');
 
   useEffect(() => {
-    // Initialize demo data on first load
-    createDemoData();
+    // Dynamically grab the most recent student created by the scoring flow
+    const students = getAllStudents();
+    if (students.length > 0) {
+      const sorted = students.sort((a, b) => {
+        const dateA = a.assessments?.[0]?.timestamp ? new Date(a.assessments[0].timestamp) : new Date(0);
+        const dateB = b.assessments?.[0]?.timestamp ? new Date(b.assessments[0].timestamp) : new Date(0);
+        return dateB - dateA;
+      });
+      setLatestStudentId(sorted[0].id);
+    }
   }, []);
 
   return (
@@ -173,7 +234,7 @@ export function Phase3Demo() {
           <button className="btn-back" onClick={() => setCurrentView('portal-menu')}>
             ← Back to Menu
           </button>
-          <ParentPortal studentId="student_001" />
+          <ParentPortal studentId={latestStudentId} />
         </div>
       )}
 
@@ -344,8 +405,13 @@ function SpecialistDashboard() {
 
   const handleLabelSubmit = (e) => {
     e.preventDefault();
-    console.log('Label submitted:', { studentId: selectedStudent.id, ...labelForm });
-    alert('Label saved successfully!');
+    if (!selectedStudent || !selectedStudent.assessments?.[0]) return;
+    
+    const assessmentId = selectedStudent.assessments[0].id;
+    updateAssessmentLabel(selectedStudent.id, assessmentId, labelForm.label, labelForm.notes);
+    
+    console.log('Label submitted:', { studentId: selectedStudent.id, assessmentId, ...labelForm });
+    alert('Specialist label saved successfully to the database!');
     setLabelForm({ label: null, confidence: 0.5, notes: '' });
   };
 

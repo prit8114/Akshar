@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useReadingTimer } from '../hooks/useReadingTimer';
+import { ProgressBar } from './ProgressBar';
 
 export function ReadingTask({
   words,
