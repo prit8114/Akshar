@@ -66,13 +66,16 @@ export const hindiScorer = {
     const accuracy = correctCount / data.length;
 
     // Latency score
-    const latencyDeviation = Math.abs(
-      meanLatency - hindiThresholds.reading.wordLatencyMean
-    );
-    const latencyScore = Math.max(
-      0,
-      1 - latencyDeviation / (hindiThresholds.reading.wordLatencyMean * 2)
-    );
+    let latencyScore;
+    if (meanLatency <= hindiThresholds.reading.wordLatencyMean) {
+      latencyScore = 1.0;
+    } else {
+      const latencyDeviation = meanLatency - hindiThresholds.reading.wordLatencyMean;
+      latencyScore = Math.max(
+        0,
+        1 - latencyDeviation / hindiThresholds.reading.wordLatencyMean
+      );
+    }
 
     // Combined score
     const readingScore = latencyScore * 0.4 + accuracy * 0.6;
@@ -96,8 +99,8 @@ export const hindiScorer = {
    */
   normalizeSpeed(duration) {
     const { speedMin, speedMax } = hindiThresholds.tracing;
-    if (duration < speedMin) return 1;
-    if (duration > speedMax) return 0;
+    if (duration < speedMin) return duration / speedMin; // Too fast (suspicious) - penalize
+    if (duration > speedMax) return 0; // Too slow
     return 1 - (duration - speedMin) / (speedMax - speedMin);
   },
 };

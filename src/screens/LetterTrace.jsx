@@ -78,10 +78,10 @@ const LetterTrace = React.memo(function LetterTrace({ language, traceIdx, onDone
   // Initialize randomized letters on first mount
   const [selectedLetters] = useState(() => {
     const cats = LETTERS[language]
-    const simple = cats.simple[Math.floor(Math.random() * cats.simple.length)]
+    const shuffledSimple = [...cats.simple].sort(() => 0.5 - Math.random())
     const matra = cats.matra[Math.floor(Math.random() * cats.matra.length)]
     const conjunct = cats.conjunct[Math.floor(Math.random() * cats.conjunct.length)]
-    return [simple, matra, conjunct]
+    return [shuffledSimple[0], shuffledSimple[1], matra, conjunct]
   })
 
   const copy = COPY[language]
@@ -224,13 +224,20 @@ const LetterTrace = React.memo(function LetterTrace({ language, traceIdx, onDone
   }
 
   const handleDone = () => {
+    const strokeCount = pathsRef.current.length;
+    // Fewer strokes = higher confidence. More strokes = lower confidence.
+    const baseConfidence = Math.max(0, 1 - (strokeCount > 0 ? strokeCount - 1 : 0) * 0.15);
+    // Also consider reattempts
+    const reattemptsPenalty = clearedCount.current * 0.1;
+    const finalConfidence = Math.max(0, Math.min(1, baseConfidence - reattemptsPenalty));
+
     onDone({
       letter: letter.char,
       strokes: pathsRef.current.map(path => ({ points: path })),
       duration: startTime.current ? Date.now() - startTime.current : 0,
       reattempts: clearedCount.current,
       pathLength: pathLength.current,
-      confidence: 1, // Defaulting to 1 for featureExtractor compatibility
+      confidence: finalConfidence,
     })
   }
 

@@ -66,15 +66,16 @@ export const gujaratiScorer = {
     const accuracy = correctCount / data.length;
 
     // Latency score (closer to mean = better)
-    const latencyDeviation = Math.abs(
-      meanLatency - gujaratiThresholds.reading.wordLatencyMean
-    );
-    const latencyScore = Math.max(
-      0,
-      1 -
-        latencyDeviation /
-          (gujaratiThresholds.reading.wordLatencyMean * 2)
-    );
+    let latencyScore;
+    if (meanLatency <= gujaratiThresholds.reading.wordLatencyMean) {
+      latencyScore = 1.0;
+    } else {
+      const latencyDeviation = meanLatency - gujaratiThresholds.reading.wordLatencyMean;
+      latencyScore = Math.max(
+        0,
+        1 - latencyDeviation / gujaratiThresholds.reading.wordLatencyMean
+      );
+    }
 
     // Combined score
     const readingScore = latencyScore * 0.4 + accuracy * 0.6;
@@ -98,7 +99,7 @@ export const gujaratiScorer = {
    */
   normalizeSpeed(duration) {
     const { speedMin, speedMax } = gujaratiThresholds.tracing;
-    if (duration < speedMin) return 1; // Too fast (suspicious)
+    if (duration < speedMin) return duration / speedMin; // Too fast (suspicious) - penalize
     if (duration > speedMax) return 0; // Too slow
     return 1 - (duration - speedMin) / (speedMax - speedMin);
   },

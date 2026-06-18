@@ -5,8 +5,8 @@ import { PerformanceAnalytics } from './components/PerformanceAnalytics';
 import { StudentProgressChart } from './components/StudentProgressChart';
 import { ReadingTask } from './components/ReadingTask';
 import { scoringEngine } from './scoring/scoringEngine';
-import { wordsHi } from './data/words.hi';
-import { wordsGu } from './data/words.gu';
+import { hindiWords as wordsHi } from './data/words.hi';
+import { gujaratiWords as wordsGu } from './data/words.gu';
 
 const WORDS = { hindi: wordsHi, gujarati: wordsGu };
 
@@ -30,6 +30,30 @@ export default function App() {
   const [traceIdx, setTraceIdx] = useState(0)
   const [traceResults, setTraceResults] = useState([])
   const [readingResults, setReadingResults] = useState(null)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  const readingWords = useMemo(() => {
+    const allWords = WORDS[language] || [];
+    const ageNum = parseInt(child.age, 10) || 6;
+    
+    let pool = [];
+    if (ageNum <= 6) {
+      pool = allWords.filter(w => w.difficulty === 'easy');
+    } else if (ageNum <= 8) {
+      pool = allWords.filter(w => w.difficulty === 'easy' || w.difficulty === 'medium');
+    } else {
+      pool = allWords.filter(w => w.difficulty === 'medium' || w.difficulty === 'hard');
+    }
+    
+    if (pool.length < 5) pool = allWords;
+
+    const shuffled = [...pool];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(0, 5);
+  }, [language, child.age])
 
   // Memoize steps array to prevent recreation on every render
   const steps = useMemo(() => [
@@ -37,6 +61,7 @@ export default function App() {
     { key: 'child_info', label: 'Profile', note: 'Language and age' },
     { key: 'trace_intro', label: 'Preview', note: 'Show the letters' },
     { key: 'tracing', label: 'Tracing', note: 'Capture motor control' },
+    { key: 'consent', label: 'Notice', note: 'Adult Required' },
     { key: 'reading', label: 'Reading', note: 'Capture fluency' },
     { key: 'phase3', label: 'Insights', note: 'Review performance' },
   ], [])
@@ -53,14 +78,14 @@ export default function App() {
   const handleTraceDone = useCallback((result) => {
     setTraceResults(prev => {
       const updated = [...prev, result]
-      if (traceIdx < 2) {
-        setTraceIdx(i => i + 1)
+      if (updated.length < 4) {
+        setTraceIdx(updated.length)
       } else {
-        go('reading')
+        go('consent')
       }
       return updated
     })
-  }, [traceIdx, go])
+  }, [go])
 
   const handleReadingDone = async (results) => {
     setReadingResults(results)
@@ -74,7 +99,9 @@ export default function App() {
       strokes: traceResults.flatMap(t => t.strokes || []),
       duration: traceResults.reduce((sum, t) => sum + (t.duration || 0), 0),
       reattempts: traceResults.reduce((sum, t) => sum + (t.reattempts || 0), 0),
-      confidence: 1 // Defaulted to 1 as per ML requirements
+      confidence: traceResults.length > 0 
+        ? traceResults.reduce((sum, t) => sum + (t.confidence || 0), 0) / traceResults.length 
+        : 1
     }
     
     // Generate real assessment report from actual captured data
@@ -91,13 +118,23 @@ export default function App() {
     go('phase3')
   }
 
-  if (screen === 'phase3') {
-    return (
-      <Phase3Demo />
+  let content = null
+
+  if (screen === 'consent') {
+    content = (
+      <div className="screen" style={{textAlign: 'center'}}>
+        <h1>Adult Supervision Required</h1>
+        <p className="subtitle">This reading assessment must be guided by a parent or teacher.</p>
+        <div style={{fontSize: '80px', margin: '32px 0'}}>👩‍🏫</div>
+        <p style={{marginBottom: '32px', fontSize: '18px', color: 'var(--text)'}}>
+          Please ensure you are sitting with the child in a quiet environment before proceeding.
+        </p>
+        <button className="btn-primary" onClick={() => go('reading')}>
+          I am a Parent/Teacher - Continue to Reading
+        </button>
+      </div>
     )
   }
-
-  let content = null
 
   if (screen === 'welcome') {
     content = <Welcome onStart={() => go('child_info')} />
@@ -132,7 +169,7 @@ export default function App() {
   if (screen === 'reading') {
     content = (
       <ReadingTask
-        words={WORDS[language].slice(0, 5)}
+        words={readingWords}
         onComplete={handleReadingDone}
         onSkip={() => handleReadingDone([])}
         taskIndex={0}
@@ -142,9 +179,26 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
-      <div className="app-shell-inner">
-        <header className="brand-bar">
+    <div className={isDarkMode ? 'dark-theme' : ''} style={{ minHeight: '100vh' }}>
+      <div className="theme-toggle-container">
+        <span className="theme-icon">☀️</span>
+        <label className="theme-switch">
+          <input 
+            type="checkbox" 
+            checked={isDarkMode} 
+            onChange={() => setIsDarkMode(!isDarkMode)} 
+          />
+          <span className="slider round"></span>
+        </label>
+        <span className="theme-icon">🌙</span>
+      </div>
+
+      {screen === 'phase3' ? (
+        <div className="phase3-wrapper"><Phase3Demo /></div>
+      ) : (
+        <div className="app-shell">
+          <div className="app-shell-inner">
+            <header className="brand-bar">
           <div className="brand-logo">
             <span className="logo-icon">अ</span>
             <h1>Akshar</h1>
@@ -166,6 +220,8 @@ export default function App() {
           </Suspense>
         </main>
       </div>
+    </div>
+      )}
     </div>
   )
 }
@@ -417,6 +473,16 @@ function SpecialistDashboard() {
 
   const currentAssessment = selectedStudent?.assessments?.[0];
 
+  const formatName = (id) => {
+    if (!id) return 'Unknown';
+    const parts = id.split('_');
+    if (parts.length >= 3) {
+      const name = parts[1];
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+    return id;
+  };
+
   return (
     <div className="specialist-dashboard">
       <div className="dashboard-header">
@@ -430,8 +496,9 @@ function SpecialistDashboard() {
           <div className="student-list">
             {students.map((student) => (
               <div key={student.id} className={`student-item ${selectedStudent?.id === student.id ? 'active' : ''}`} onClick={() => setSelectedStudent(student)}>
-                <div className="student-name">
-                  {student.name}
+                <div className="student-avatar">{formatName(student.id).charAt(0)}</div>
+                <div className="student-info-col">
+                  <span className="student-name">{formatName(student.id)}</span>
                   <span className="assessment-count">{student.assessments?.length || 0} assessments</span>
                 </div>
               </div>
@@ -445,29 +512,35 @@ function SpecialistDashboard() {
           ) : (
             <>
               <div className="review-header">
-                <h2>{selectedStudent.name}</h2>
-                <span className="assessment-date">Latest: {new Date(currentAssessment?.timestamp).toLocaleDateString()}</span>
+                <h2>Reviewing: {formatName(selectedStudent.id)}</h2>
+                <span className="assessment-date">Latest Assessment: {new Date(currentAssessment?.timestamp).toLocaleDateString()}</span>
               </div>
 
-              <div className="assessment-details">
-                <div className="detail-section">
+              <div className="assessment-details-grid">
+                <div className="detail-card">
                   <h4>AI Prediction</h4>
-                  <div className={`prediction-badge ${currentAssessment?.riskAssessment?.overallRisk?.toLowerCase()}-risk`}>
-                    {currentAssessment?.riskAssessment?.overallRisk}
+                  <div className="detail-metric">
+                    <span className={`risk-pill ${currentAssessment?.riskAssessment?.overallRisk?.toLowerCase()}`}>
+                      {currentAssessment?.riskAssessment?.overallRisk}
+                    </span>
                   </div>
-                  <p>Risk Score: {((currentAssessment?.riskAssessment?.riskScore || 0) * 100).toFixed(1)}%</p>
+                  <p className="detail-sub">Confidence Score: {((currentAssessment?.riskAssessment?.confidence || 0) * 100).toFixed(1)}%</p>
                 </div>
 
-                <div className="detail-section">
+                <div className="detail-card">
                   <h4>Tracing Performance</h4>
-                  <p>Score: {((currentAssessment?.tracingScore?.score || 0) * 100).toFixed(1)}%</p>
-                  <p>Re-attempts: {currentAssessment?.tracingScore?.reattempts}</p>
+                  <div className="detail-metric">
+                    <span className="score-value">{((currentAssessment?.tracingScore?.score || 0) * 100).toFixed(1)}%</span>
+                  </div>
+                  <p className="detail-sub">Re-attempts: {currentAssessment?.tracingScore?.reattempts}</p>
                 </div>
 
-                <div className="detail-section">
+                <div className="detail-card">
                   <h4>Reading Performance</h4>
-                  <p>Score: {((currentAssessment?.readingScore?.score || 0) * 100).toFixed(1)}%</p>
-                  <p>Accuracy: {((currentAssessment?.readingScore?.accuracy || 0) * 100).toFixed(1)}%</p>
+                  <div className="detail-metric">
+                    <span className="score-value">{((currentAssessment?.readingScore?.score || 0) * 100).toFixed(1)}%</span>
+                  </div>
+                  <p className="detail-sub">Accuracy: {((currentAssessment?.readingScore?.accuracy || 0) * 100).toFixed(1)}%</p>
                 </div>
               </div>
 
@@ -483,16 +556,19 @@ function SpecialistDashboard() {
                 </div>
 
                 <div className="form-group">
-                  <label>Confidence Level: {(labelForm.confidence * 100).toFixed(0)}%</label>
-                  <input type="range" min="0" max="1" step="0.05" value={labelForm.confidence} onChange={(e) => setLabelForm({...labelForm, confidence: parseFloat(e.target.value)})} />
+                  <div className="slider-header">
+                    <label>Confidence Level</label>
+                    <span className="slider-value">{(labelForm.confidence * 100).toFixed(0)}%</span>
+                  </div>
+                  <input className="premium-slider" type="range" min="0" max="1" step="0.05" value={labelForm.confidence} onChange={(e) => setLabelForm({...labelForm, confidence: parseFloat(e.target.value)})} />
                 </div>
 
                 <div className="form-group">
-                  <label>Notes</label>
-                  <textarea value={labelForm.notes} onChange={(e) => setLabelForm({...labelForm, notes: e.target.value})} placeholder="Add any clinical observations..." rows="4" />
+                  <label>Clinical Notes</label>
+                  <textarea className="premium-textarea" value={labelForm.notes} onChange={(e) => setLabelForm({...labelForm, notes: e.target.value})} placeholder="Add any clinical observations..." rows="4" />
                 </div>
 
-                <button type="submit" className="btn-primary">Save Label</button>
+                <button type="submit" className="btn-warning" style={{width: '100%', marginTop: '16px'}}>Save Specialist Label</button>
               </form>
 
               <div className="history-section">
