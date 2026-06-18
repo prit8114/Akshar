@@ -123,28 +123,6 @@ While Phase 1 and 2 rely on curated, locally-stored word lists designed to speci
 
 ---
 
-## Why It Wins Against the Judging Criteria
-
-**Innovation and Creativity**  
-No Indian-script dyslexia screening tool exists anywhere in the world. The error-pattern mapping for abugida scripts is novel research, not incremental product development. IIT Delhi judges who work in NLP or cognitive science will immediately recognise the gap.
-
-**Social Impact**  
-Directly addresses the most underserved demographic in Indian education: children in Gujarati and Hindi-medium schools outside metro cities. Learning disabilities are often the hidden cause behind dropout statistics that government programmes are trying to address through other means.
-
-**Feasibility**  
-Phase 1 is fully buildable and is being built. A working prototype is in active development. The heuristic scoring engine requires no training data. The web-based architecture requires no specialist hardware or installation.
-
-**Scalability**  
-Language modules are additive. Once the core architecture is validated for Gujarati and Hindi, Tamil and Telugu follow the same pattern. Any school with a laptop can deploy it.
-
-**Technical Depth**  
-Letter tracing path analysis, reading rhythm timing, matra-word differential scoring, multi-script architecture, and a Phase 2 supervised ML pipeline grounded in labeled data from real school partnerships.
-
-**Samsung Alignment**  
-Directly addresses two Samsung Solve for Tomorrow themes simultaneously — Health (early identification of a learning disability) and Education (equitable access to screening tools regardless of geography, language, or income).
-
----
-
 ## The Team
 
 **Team Akshar**  
