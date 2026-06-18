@@ -135,8 +135,6 @@ Parul Institute of Technology — B.Tech Computer Science Engineering
 
 *Strategic advantage: Our base in Vadodara gives us direct access to Gujarati-medium primary schools for Phase 1 deployment and Phase 2 data collection. This is not hypothetical access — it is a partnership we can establish before the hackathon concludes.*
 
-*Strategic advantage: Our base in Vadodara gives us direct access to Gujarati-medium primary schools for Phase 1 deployment and Phase 2 data collection. This is not hypothetical access — it is a partnership we can establish before the hackathon concludes.*
-
 ---
 
 *Akshar — because every child deserves to be seen.*
