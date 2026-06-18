@@ -50,13 +50,13 @@ export function StudentProgressChart({ assessments }) {
 
       <svg width="500" height={chartHeight + 40} className="chart-svg">
         {/* Y-axis labels */}
-        <text x="10" y={chartHeight + 10} fontSize="12" fill="#666">
+        <text x="10" y={chartHeight + 10} fontSize="12" fill="var(--muted)">
           0%
         </text>
-        <text x="10" y={chartHeight / 2 + 5} fontSize="12" fill="#666">
+        <text x="10" y={chartHeight / 2 + 5} fontSize="12" fill="var(--muted)">
           50%
         </text>
-        <text x="10" y={15} fontSize="12" fill="#666">
+        <text x="10" y={15} fontSize="12" fill="var(--muted)">
           100%
         </text>
 
@@ -66,7 +66,7 @@ export function StudentProgressChart({ assessments }) {
           y1={chartHeight}
           x2="450"
           y2={chartHeight}
-          stroke="#e0e0e0"
+          stroke="var(--border-solid)"
           strokeWidth="1"
         />
         <line
@@ -74,7 +74,7 @@ export function StudentProgressChart({ assessments }) {
           y1={chartHeight / 2}
           x2="450"
           y2={chartHeight / 2}
-          stroke="#e0e0e0"
+          stroke="var(--border-solid)"
           strokeWidth="1"
           strokeDasharray="5,5"
         />
@@ -83,7 +83,7 @@ export function StudentProgressChart({ assessments }) {
         <polyline
           points={tracingPath}
           fill="none"
-          stroke="#0066cc"
+          stroke="var(--primary)"
           strokeWidth="2"
           style={{ transform: `translate(30, 0)` }}
         />
@@ -92,7 +92,7 @@ export function StudentProgressChart({ assessments }) {
         <polyline
           points={readingPath}
           fill="none"
-          stroke="#28a745"
+          stroke="var(--risk-low)"
           strokeWidth="2"
           style={{ transform: `translate(30, 0)` }}
         />
@@ -101,7 +101,7 @@ export function StudentProgressChart({ assessments }) {
         <polyline
           points={riskPath}
           fill="none"
-          stroke="#dc3545"
+          stroke="var(--risk-high)"
           strokeWidth="2"
           style={{ transform: `translate(30, 0)` }}
         />
@@ -113,7 +113,7 @@ export function StudentProgressChart({ assessments }) {
             cx={points[i] + 30}
             cy={getY(score)}
             r="4"
-            fill="#0066cc"
+            fill="var(--primary)"
           />
         ))}
 
@@ -124,7 +124,7 @@ export function StudentProgressChart({ assessments }) {
             cx={points[i] + 30}
             cy={getY(score)}
             r="4"
-            fill="#28a745"
+            fill="var(--risk-low)"
           />
         ))}
 
@@ -135,7 +135,7 @@ export function StudentProgressChart({ assessments }) {
             cx={points[i] + 30}
             cy={getY(score)}
             r="4"
-            fill="#dc3545"
+            fill="var(--risk-high)"
           />
         ))}
       </svg>
@@ -143,15 +143,15 @@ export function StudentProgressChart({ assessments }) {
       {/* Legend */}
       <div className="chart-legend">
         <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: '#0066cc' }}></span>
+          <span className="legend-color" style={{ backgroundColor: 'var(--primary)' }}></span>
           <span>Tracing Performance</span>
         </div>
         <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: '#28a745' }}></span>
+          <span className="legend-color" style={{ backgroundColor: 'var(--risk-low)' }}></span>
           <span>Reading Fluency</span>
         </div>
         <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: '#dc3545' }}></span>
+          <span className="legend-color" style={{ backgroundColor: 'var(--risk-high)' }}></span>
           <span>Risk Score</span>
         </div>
       </div>

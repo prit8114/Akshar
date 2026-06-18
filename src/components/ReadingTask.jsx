@@ -91,10 +91,10 @@ export function ReadingTask({
 
         <div className="button-group">
           <button onClick={handleCorrect} className="btn-success">
-            I read it correctly ✓
+            Read it correctly ✓
           </button>
           <button onClick={handleIncorrect} className="btn-warning">
-            I had trouble ✗
+            Had trouble ✗
           </button>
           <button onClick={onSkip} className="btn-secondary">
             Skip

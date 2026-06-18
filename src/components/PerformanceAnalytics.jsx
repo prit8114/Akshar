@@ -33,9 +33,9 @@ export function PerformanceAnalytics({ studentId }) {
   }
 
   const getImprovementColor = (improvement) => {
-    if (improvement > 0.1) return '#28a745'; // Green - good improvement
-    if (improvement > 0) return '#ffc107'; // Yellow - slight improvement
-    return '#dc3545'; // Red - declining
+    if (improvement > 0.1) return 'var(--risk-low)'; // Green - good improvement
+    if (improvement > 0) return 'var(--risk-moderate)'; // Yellow - slight improvement
+    return 'var(--risk-high)'; // Red - declining
   };
 
   const renderTrendIndicator = (value, label) => {
@@ -73,11 +73,11 @@ export function PerformanceAnalytics({ studentId }) {
               color:
                 trend.latestAssessment?.riskAssessment?.overallRisk ===
                 'LOW'
-                  ? '#28a745'
+                  ? 'var(--risk-low)'
                   : trend.latestAssessment?.riskAssessment?.overallRisk ===
                       'MODERATE'
-                    ? '#ffc107'
-                    : '#dc3545',
+                    ? 'var(--risk-moderate)'
+                    : 'var(--risk-high)',
             }}
           >
             {trend.latestAssessment?.riskAssessment?.overallRisk}

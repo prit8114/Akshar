@@ -117,6 +117,10 @@ A single teacher can screen an entire classroom in one session. No app installat
 
 Even reaching 1% of at-risk children means hundreds of thousands of children referred for assessment who would otherwise go entirely unscreened for their entire school career.
 
+## Future Scope: Dynamic Vocabulary API
+
+While Phase 1 and 2 rely on curated, locally-stored word lists designed to specifically target dyslexia phonetic indicators, **Phase 4** will involve building a dynamic API fetching mechanism. This backend service will allow schools and specialists to supply an infinite, dynamic vocabulary of words directly from the internet or a centralized database. The scoring engine will be adapted to automatically extract features from arbitrary text inputs, enabling testing that is not constrained by a limited vocabulary pool.
+
 ---
 
 ## Why It Wins Against the Judging Criteria
